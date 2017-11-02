@@ -17,7 +17,7 @@
 
 // global variables
 
-uint8_t DebugOutput=0;  // Use 1 for chatty serial output (but it won't be compatible with GUI)
+uint8_t DebugOutput=1;  // Use 1 for chatty serial output (but it won't be compatible with GUI)
 
 #define SIP_BUTTON    9
 #define PUFF_BUTTON  10
@@ -37,7 +37,8 @@ uint8_t DebugOutput=0;  // Use 1 for chatty serial output (but it won't be compa
 #endif
 
 struct settingsType settings = {      // type definition see fabi.h
-    "empty", 3,  1000, 0, 1023        // slotname, wheel step, threshold time (short/longpress), sip threshold, puff threshold
+   /* "empty", 3,  1000, 0, 1023, LAYOUT_US_INTERNATIONAL // slotname, wheel step, threshold time (short/longpress), sip threshold, puff threshold, layout*/
+    "empty", 3,  1000, 0, 1023, LAYOUT_GERMAN // slotname, wheel step, threshold time (short/longpress), sip threshold, puff threshold, layout
 }; 
 
 
@@ -86,12 +87,42 @@ void initDebouncers();
 
 void setup() {
    Serial.begin(9600);
-    // delay(5000);
-    // while (!Serial) ;
    
-   if (DebugOutput==1) {  
+   if (DebugOutput==1) {
+     /** Wait for 4 seconds until starting, to enable early debug output */
+     delay(10000);  
      Serial.println(F("Flexible Assistive Button Interface started !"));
    }
+   
+   //TODO: this is just output...
+   /*uint8_t j = 0x01;
+   while(1)
+   {
+      Serial.print("LOCALE:    0x");
+      Serial.print(j,HEX);
+      Serial.println("----------------------------------------");
+      for(uint8_t i = 0; i<=0x5E;i++)
+      {
+         Serial.print("Keycode ASCI:");
+         Serial.print(get_keycode_ascii(i,j),HEX);
+         Serial.print(" ISO: ");
+         Serial.print(get_keycode_iso8859(i,j),HEX);
+         Serial.print(" -- CPoint(ASCII): ");
+         Serial.print(i+0x20);
+         Serial.print("/0x");
+         Serial.print(i+0x20,HEX);
+         Serial.print(" CPoint(ISO): ");
+         Serial.print(i+0xA0);
+         Serial.print("/0x");
+         Serial.println(i+0xA0,HEX);
+      }
+      j++;
+      if(j==0x03) j = 0x10;
+      if(j==0x17) break;
+   }*/
+   
+   //init Bluetooth module
+   btInit();
 
    #ifdef ARDUINO_PRO_MICRO   // only needed for Arduino, automatically done for Teensy(duino)
      Mouse.begin();
@@ -133,6 +164,8 @@ void loop() {
 
       pressure = analogRead(PRESSURE_SENSOR_PIN);
 
+      btLoop();
+      
       while (Serial.available() > 0) {
         // get incoming byte:
         inByte = Serial.read();
@@ -156,6 +189,7 @@ void loop() {
           if (moveY!=0) if (moveYcnt<MOUSE_ACCELDELAY) moveYcnt++;
 
           Mouse.move(moveX * moveXcnt/MOUSE_ACCELDELAY, moveY * moveYcnt/MOUSE_ACCELDELAY);
+          btMMove(moveX * moveXcnt/MOUSE_ACCELDELAY, moveY * moveYcnt/MOUSE_ACCELDELAY);
         }
       }
 
@@ -179,21 +213,39 @@ void loop() {
  
       // if any changes were made, update the Mouse buttons
       if(leftMouseButton!=old_leftMouseButton) {
-         if (leftMouseButton) Mouse.press(MOUSE_LEFT); else Mouse.release(MOUSE_LEFT);
+         if (leftMouseButton) {
+            Mouse.press(MOUSE_LEFT);
+            btMPress(MOUSE_LEFT);
+         } else {
+            Mouse.release(MOUSE_LEFT);
+            btMRelease(MOUSE_LEFT);
+         }
          old_leftMouseButton=leftMouseButton;
       }
       if  (middleMouseButton!=old_middleMouseButton) {
-         if (middleMouseButton) Mouse.press(MOUSE_MIDDLE); else Mouse.release(MOUSE_MIDDLE);
+         if (middleMouseButton) {
+            Mouse.press(MOUSE_MIDDLE);
+            btMPress(MOUSE_MIDDLE);
+         } else {
+            Mouse.release(MOUSE_MIDDLE);
+            btMRelease(MOUSE_MIDDLE);
+         }
          old_middleMouseButton=middleMouseButton;
       }
       if  (rightMouseButton!=old_rightMouseButton)  {
-         if (rightMouseButton) Mouse.press(MOUSE_RIGHT); else Mouse.release(MOUSE_RIGHT);
+         if (rightMouseButton) {
+            Mouse.press(MOUSE_RIGHT);
+            btMPress(MOUSE_RIGHT);
+         } else {
+            Mouse.release(MOUSE_RIGHT);
+            btMRelease(MOUSE_RIGHT);
+         }
          old_rightMouseButton=rightMouseButton;
      }
     
      // handle Keyboard output (single key press/release is done seperately via setKeyValues() ) 
      if (writeKeystring) {
-        sendToKeyboard(writeKeystring);
+        KeyboardWriteWithConstants(writeKeystring);
         writeKeystring=0;
     }    
 
@@ -241,6 +293,8 @@ void initDebouncers()
 void release_all()  // releases all previously pressed keys
 {
     Keyboard.releaseAll();
+    btMRelease(MOUSE_ALL);
+    btKReleaseAll();
     leftMouseButton=0;
     rightMouseButton=0;
     middleMouseButton=0;

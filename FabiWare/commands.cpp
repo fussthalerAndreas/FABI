@@ -184,13 +184,13 @@ void performCommand (uint8_t cmd, int16_t par1, char * keystring, int8_t periodi
                if (DebugOutput==1) 
                {  Serial.print(F("mouse move x ")); Serial.println(par1); }
                if (periodicMouseMovement) moveX=par1;
-               else Mouse.move(par1, 0);
+               else { Mouse.move(par1, 0); btMMove(par1,0); }
             break;
         case CMD_MY:
                if (DebugOutput==1)   
                {  Serial.print(F("mouse move y ")); Serial.println(par1); }
                if (periodicMouseMovement) moveY=par1;
-               else Mouse.move(0, par1);
+               else { Mouse.move(0, par1); btMMove(0, par1); }
             break;
         case CMD_KW:
                if (DebugOutput==1)   

@@ -18,11 +18,17 @@
 #ifndef _FABI_H_
 #define _FABI_H_
 
+/** SETTING a LOCALE is in keylayouts.c !! */
+
+#include "keylayouts.h"
+
 #include <Arduino.h>
 #include <string.h>
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "commands.h"
+#include "keys.h"
+#include "bluetooth.h"
 
 
 #define VERSION_STRING "FABI v2.1"
@@ -68,6 +74,7 @@ struct settingsType {
   uint16_t tt;     // threshold time 
   uint16_t ts;     // threshold sip
   uint16_t tp;     // threshold puff 
+  uint8_t locale;  // current keyboard locale settings, see keylayouts.h
 };
 
 struct atCommandType {                      // holds settings for a button function 
