@@ -23,9 +23,11 @@
 #include <stdint.h>
 #include <avr/pgmspace.h>
 #include "commands.h"
+#include "bluetooth.h"
+#include "hid_hal.h"
 
 
-#define VERSION_STRING "FABI v2.3"
+#define VERSION_STRING "FABI v2.4"
 
 //#define TEENSY            //  if a Teensy2.0++ controller is used
 #define ARDUINO_PRO_MICRO   //  if Arduino Leonardo or Arduino (Pro) Micro is used 
@@ -84,6 +86,7 @@ struct settingsType {
   uint16_t ap;     // antitremor press time 
   uint16_t ar;     // antitremor release time 
   uint16_t ai;     // antitremor idle time 
+  uint8_t  bt; 	   // bluetooth/USB HID mode (0: no HID action, 1: only USB, 2: only BT, 3: both)
 };
 
 struct atCommandType {              // holds settings for a button function 

@@ -13,7 +13,7 @@ const struct atCommandType atCommands[] PROGMEM = {
     {"E1"  , PARTYPE_NONE },  {"E0"  , PARTYPE_NONE }, {"SR"  , PARTYPE_NONE }, {"ER"  , PARTYPE_NONE },
     {"TS"  , PARTYPE_UINT },  {"TP"  , PARTYPE_UINT }, {"MA"  , PARTYPE_STRING},{"WA"  , PARTYPE_UINT  },
     {"TT"  , PARTYPE_UINT },  {"AP"  , PARTYPE_UINT }, {"AR"  , PARTYPE_UINT},  {"AI"  , PARTYPE_UINT  },
-    {"FR"  , PARTYPE_NONE }
+    {"FR"  , PARTYPE_NONE },  {"BT"  , PARTYPE_UINT },
 };
 
 void printCurrentSlot()
@@ -26,6 +26,7 @@ void printCurrentSlot()
         Serial.print(F("AT AP ")); Serial.println(settings.ap);
         Serial.print(F("AT AR ")); Serial.println(settings.ar);
         Serial.print(F("AT AI ")); Serial.println(settings.ai);
+        Serial.print(F("AT BT ")); Serial.println(settings.bt);
         for (int i=0;i<NUMBER_OF_BUTTONS;i++) 
         {
            Serial.print(F("AT BM ")); 
@@ -150,26 +151,14 @@ void performCommand (uint8_t cmd, int16_t parNum, char * parString, int8_t perio
         case CMD_WU:
                if (DebugOutput==1)
                  Serial.println(F("wheel up"));
-               
-               #ifdef ARDUINO_PRO_MICRO
-				  if(settings.ws != 0) Mouse.move(0,0,-settings.ws); 
-				  else Mouse.move(0,0,-DEFAULT_WHEEL_STEPSIZE); 
-               #else
-				  if(settings.ws != 0) Mouse.scroll(-settings.ws); 
-				  else Mouse.scroll(-DEFAULT_WHEEL_STEPSIZE); 
-               #endif
+               if(settings.ws != 0) mouseScroll(-settings.ws);
+			   else mouseScroll(-DEFAULT_WHEEL_STEPSIZE);
             break;
         case CMD_WD:
                if (DebugOutput==1)
                  Serial.println(F("wheel down"));
-              
-               #ifdef ARDUINO_PRO_MICRO
-				  if(settings.ws != 0) Mouse.move(0,0,settings.ws); 
-				  else Mouse.move(0,0,DEFAULT_WHEEL_STEPSIZE); 
-               #else
-				  if(settings.ws != 0) Mouse.scroll(settings.ws); 
-				  else Mouse.scroll(DEFAULT_WHEEL_STEPSIZE); 
-               #endif
+               if(settings.ws != 0) mouseScroll(settings.ws);
+			   else mouseScroll(DEFAULT_WHEEL_STEPSIZE);
             break;
         case CMD_WS:
                if (DebugOutput==1)
@@ -177,17 +166,23 @@ void performCommand (uint8_t cmd, int16_t parNum, char * parString, int8_t perio
                
                settings.ws=parNum;
             break;
+        case CMD_BT:
+               if (DebugOutput==1)
+                 Serial.println(F("BT mode"));
+               if(parNum <= 3) settings.bt = parNum;
+               else settings.bt = 3;
+            break;
         case CMD_MX:
                if (DebugOutput==1) 
                {  Serial.print(F("mouse move x ")); Serial.println(parNum); }
                if (periodicMouseMovement) moveX=parNum;
-               else Mouse.move(parNum, 0);
+               else mouseMove(parNum, 0);
             break;
         case CMD_MY:
                if (DebugOutput==1)   
                {  Serial.print(F("mouse move y ")); Serial.println(parNum); }
                if (periodicMouseMovement) moveY=parNum;
-               else Mouse.move(0, parNum);
+               else mouseMove(0, parNum);
             break;
         case CMD_KW:
                if (DebugOutput==1)   

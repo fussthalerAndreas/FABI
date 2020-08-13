@@ -185,7 +185,7 @@ void pressSingleKeys(char* keyNames)
   while (len=getNextKeyName(keyNames,singleKeyName))
   {
     int kc=getKeycode(singleKeyName);
-    if (kc) Keyboard.press(kc);
+    if (kc) keyboardPress(kc);
     keyNames+=len;
   }
 }
@@ -199,7 +199,7 @@ void releaseSingleKeys (char * keyNames)
   while (len=getNextKeyName(keyNames,singleKeyName))
   {
     int kc=getKeycode(singleKeyName);
-    if (kc) Keyboard.release(kc);
+    if (kc) keyboardRelease(kc);
     keyNames+=len;
   }
 }
@@ -217,12 +217,12 @@ void writeTranslatedKeys(char * str, int len)
      // if (k&MOD_ALTGR) Serial.print("AltGr + "); if (k&MOD_SHIFT) Serial.print("Shift + "); 
      // Serial.print((char)(k&0xff)); Serial.println(")");
 
-      if (k&MOD_ALTGR) Keyboard.press(KEY_RIGHT_ALT); 
-      if (k&MOD_SHIFT) Keyboard.press(KEY_LEFT_SHIFT); 
-      Keyboard.press(k&0xff); 
-      Keyboard.release(k&0xff); 
-      if (k&MOD_SHIFT) Keyboard.release(KEY_LEFT_SHIFT); 
-      if (k&MOD_ALTGR) Keyboard.release(KEY_RIGHT_ALT);
+      if (k&MOD_ALTGR) keyboardPress(KEY_RIGHT_ALT); 
+      if (k&MOD_SHIFT) keyboardPress(KEY_LEFT_SHIFT); 
+      keyboardPress(k&0xff); 
+      keyboardRelease(k&0xff); 
+      if (k&MOD_SHIFT) keyboardRelease(KEY_LEFT_SHIFT); 
+      if (k&MOD_ALTGR) keyboardRelease(KEY_RIGHT_ALT);
    }
 }
 
@@ -239,7 +239,11 @@ void sendToKeyboard(char * writeKeystring)
         //extract name of special key
         getNextKeyName(specialKeyLocation,singleKeyName);
         int kc=getKeycode(singleKeyName);
-        if (kc)  Keyboard.write(kc);
+        if (kc)
+        {
+			keyboardPress(kc);
+			keyboardRelease(kc);
+		}
         // continue after special key name
         actpos= specialKeyLocation+strlen(singleKeyName);
         specialKeyLocation=strstr(actpos,"KEY_");

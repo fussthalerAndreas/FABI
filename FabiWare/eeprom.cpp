@@ -1,7 +1,15 @@
 #include "fabi.h"
 #include <EEPROM.h>
 
-#define SLOT_VALID 0x23
+//valid slot tag of previous version.
+//if this tag is found, we know a different handling of the slot data is necessary.
+#define SLOT_VALID_OLD 0x23
+//currently used slot validation tag.
+#define SLOT_VALID 0x24
+
+/****** changes in EEPROM content for versions ******/
+///->v2.4:
+	//added 1x byte to general settings (bt mode)
 
 int nextSlotAddress=0;
 int EmptySlotAddress = 0;
@@ -98,9 +106,19 @@ void readFromEEPROM(char * slotname)
    uint8_t stringCount=0;
    uint8_t* p;
 
-   while (EEPROM.read(address)==SLOT_VALID)  // indicates valid eeprom content !
+   while ((EEPROM.read(address)==SLOT_VALID) || (EEPROM.read(address)==SLOT_VALID_OLD))  // indicates valid eeprom content !
    {
       uint8_t found=0;
+      
+      //determine if we have a slot of previous version
+      uint8_t oldslot = 0;
+      if(EEPROM.read(address)==SLOT_VALID_OLD)
+      {
+		  oldslot = 1;
+	      if (DebugOutput==1) {  
+	         Serial.print(F("processing slot from previous version!"));
+	      }
+	  }
       
       if ((!slotname) && (address==nextSlotAddress)) found=1;
       address++;
@@ -123,8 +141,12 @@ void readFromEEPROM(char * slotname)
            Serial.print(F("LOADING slot ")); Serial.println(act_slotname);
         }
         p = (uint8_t*) &settings;
-        for (int t=0;t<sizeof(settingsType);t++)
-            *p++=EEPROM.read(address++);
+		//v2.3 slot doesn't have a BT setting, -1Byte
+		//-> we use oldslot variable here :-)
+		for (int t=0;t<(sizeof(settingsType)-oldslot);t++)
+			*p++=EEPROM.read(address++);
+		//if v2.3 slot is loaded, set BT mode to 3 by default
+		if(oldslot) settings.bt = 3;
         
         p = (uint8_t*) buttons;
         for (int i=0;i<NUMBER_OF_BUTTONS*sizeof(buttonType);i++) 
@@ -188,7 +210,8 @@ void listSlots()
    uint8_t numSlots=0;
    uint8_t b;
    
-   while (EEPROM.read(address)==SLOT_VALID)  // indicates valid eeprom content !
+   //both v2.3 & v2.4 have same name tagging system
+   while((EEPROM.read(address)==SLOT_VALID)||(EEPROM.read(address)==SLOT_VALID_OLD))  // indicates valid eeprom content !
    {
      numSlots++;
      address++;

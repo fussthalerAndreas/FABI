@@ -99,7 +99,9 @@ void setup() {
      Mouse.begin();
      Keyboard.begin();
      TXLED1;
-   #endif  
+   #endif
+   
+   initBluetooth();
 
    pinMode(LED_PIN,OUTPUT);
 
@@ -157,7 +159,7 @@ void loop() {
           if (moveX!=0) if (moveXcnt<MOUSE_ACCELDELAY) moveXcnt++;
           if (moveY!=0) if (moveYcnt<MOUSE_ACCELDELAY) moveYcnt++;
 
-          Mouse.move(moveX * moveXcnt/MOUSE_ACCELDELAY, moveY * moveYcnt/MOUSE_ACCELDELAY);
+          mouseMove(moveX * moveXcnt/MOUSE_ACCELDELAY, moveY * moveYcnt/MOUSE_ACCELDELAY);
         }
       }
 
@@ -181,15 +183,15 @@ void loop() {
  
       // if any changes were made, update the Mouse buttons
       if(leftMouseButton!=old_leftMouseButton) {
-         if (leftMouseButton) Mouse.press(MOUSE_LEFT); else Mouse.release(MOUSE_LEFT);
+         if (leftMouseButton) mousePress(MOUSE_LEFT); else mouseRelease(MOUSE_LEFT);
          old_leftMouseButton=leftMouseButton;
       }
       if  (middleMouseButton!=old_middleMouseButton) {
-         if (middleMouseButton) Mouse.press(MOUSE_MIDDLE); else Mouse.release(MOUSE_MIDDLE);
+         if (middleMouseButton) mousePress(MOUSE_MIDDLE); else mouseRelease(MOUSE_MIDDLE);
          old_middleMouseButton=middleMouseButton;
       }
       if  (rightMouseButton!=old_rightMouseButton)  {
-         if (rightMouseButton) Mouse.press(MOUSE_RIGHT); else Mouse.release(MOUSE_RIGHT);
+         if (rightMouseButton) mousePress(MOUSE_RIGHT); else mouseRelease(MOUSE_RIGHT);
          old_rightMouseButton=rightMouseButton;
     }
     
@@ -236,7 +238,7 @@ void initDebouncers()
 void release_all()  // releases all previously pressed keys
 {
     // Serial.println("release all!");
-    Keyboard.releaseAll();
+    keyboardReleaseAll();
     leftMouseButton=0;
     rightMouseButton=0;
     middleMouseButton=0;

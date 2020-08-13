@@ -22,6 +22,7 @@
           AT AP <uint>    antitremor press time (1-500)
           AT AR <uint>    antitremor release time (1-500)
           AT AI <uint>    antitremor idle time (1-500)
+          AT BT <uint>	  Bluetooth/USB HID mode: 0 no HID; 1 USB HID; 2 BT HID; 3 both (BT works only if ESP32 addon is attached)
 
     USB HID commands:
       
@@ -95,7 +96,7 @@ enum atCommands {
   CMD_ID, CMD_BM, CMD_CL, CMD_CR, CMD_CM, CMD_CD, CMD_PL, CMD_PR, CMD_PM, CMD_RL, CMD_RR, CMD_RM,
   CMD_WU, CMD_WD, CMD_WS, CMD_MX, CMD_MY, CMD_KW, CMD_KP, CMD_KR, CMD_RA, CMD_SA, CMD_LO, CMD_LA,
   CMD_LI, CMD_NE, CMD_DE, CMD_NC, CMD_E1, CMD_E0, CMD_SR, CMD_ER, CMD_TS, CMD_TP, CMD_MA, CMD_WA,
-  CMD_TT, CMD_AP, CMD_AR, CMD_AI, CMD_FR, NUM_COMMANDS
+  CMD_TT, CMD_AP, CMD_AR, CMD_AI, CMD_FR, CMD_BT, NUM_COMMANDS
 };
 
 #endif
